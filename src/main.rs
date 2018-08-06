@@ -1,32 +1,58 @@
+#![feature(plugin, custom_derive, const_fn, decl_macro)]
+#![plugin(rocket_codegen)]
+
+extern crate rocket;
+extern crate rocket_contrib;
+
 #[macro_use]
 extern crate diesel;
 
 #[macro_use]
 extern crate dotenv;
-
+extern crate r2d2;
+extern crate r2d2_diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
 
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
+
+
 mod models;
 mod schema;
+mod db;
+mod static_files;
 
-fn main() {
+
+fn rocket() -> rocket::Rocket {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("set DATABASE_URL");
-    let conn = PgConnection::establish(&database_url).unwrap();
+    let pool = db::init_pool(database_url);
 
-    let book = models::NewBook {
-        title: String::from("Gravity's Rainbow"),
-        author: String::from("Thmoas Pynchon"),
-        published: true,
-    };
+    rocket::ignite()
+        .manage(pool)
+        .mount("/", routes![static_files::all, static_files::index])
+}
 
-    if models::Book::insert(book, &conn) {
-        println!("sucess");
-    } else {
-        println!("failed");
-    }
+fn main() {
+
+//    let book = models::NewBook {
+//        title: String::from("Gravity's Rainbow"),
+//        author: String::from("Thmoas Pynchon"),
+//        published: true,
+//    };
+//
+//    if models::Book::insert(book, &conn) {
+//        println!("sucess");
+//    } else {
+//        println!("failed");
+//    }
+
+    rocket().launch();
+
 }
