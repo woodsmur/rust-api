@@ -1,4 +1,4 @@
-#![feature(plugin, custom_derive, const_fn, decl_macro)]
+#![feature(plugin, custom_derive, const_fn, decl_macro, custom_attribute)]
 #![plugin(rocket_codegen)]
 
 extern crate rocket;
@@ -15,6 +15,7 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
+use routes::*;
 
 #[macro_use]
 extern crate serde_derive;
@@ -26,6 +27,7 @@ mod models;
 mod schema;
 mod db;
 mod static_files;
+mod routes;
 
 
 fn rocket() -> rocket::Rocket {
@@ -36,7 +38,12 @@ fn rocket() -> rocket::Rocket {
 
     rocket::ignite()
         .manage(pool)
+        .mount(
+            "/api/v1/",
+            routes![index, new, show, delete, author, update],
+        )
         .mount("/", routes![static_files::all, static_files::index])
+        .catch(catchers![not_found])
 }
 
 fn main() {
