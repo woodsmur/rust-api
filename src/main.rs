@@ -1,27 +1,20 @@
-#![feature(plugin, custom_derive, const_fn, decl_macro, custom_attribute)]
-#![plugin(rocket_codegen)]
+// #![feature(plugin, custom_derive, const_fn, decl_macro, custom_attribute)]
+// #![plugin(rocket_codegen)]
 
-extern crate rocket;
-extern crate rocket_contrib;
-
-#[macro_use]
-extern crate diesel;
-
-#[macro_use]
-extern crate dotenv;
+#![feature(proc_macro_hygiene, decl_macro)]
+#[macro_use] extern crate rocket;
+#[macro_use] extern crate rocket_contrib;
+#[macro_use] extern crate diesel;
+#[macro_use] extern crate dotenv;
 extern crate r2d2;
 extern crate r2d2_diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
-use routes::*;
 
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate serde_json;
-
+#[macro_use] extern crate serde_derive;
+#[macro_use] extern crate serde_json;
 
 mod models;
 mod schema;
@@ -29,6 +22,11 @@ mod db;
 mod static_files;
 mod routes;
 
+// muse use '*'
+use crate::routes::*;
+
+// not work
+// use crate::routes::{index, new, show, delete, author, update};
 
 fn rocket() -> rocket::Rocket {
     dotenv().ok();
@@ -43,7 +41,7 @@ fn rocket() -> rocket::Rocket {
             routes![index, new, show, delete, author, update],
         )
         .mount("/", routes![static_files::all, static_files::index])
-        .catch(catchers![not_found])
+        .register(catchers![not_found])
 }
 
 fn main() {

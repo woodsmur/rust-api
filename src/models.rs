@@ -3,8 +3,8 @@ use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
-use schema::books;
-use schema::books::dsl::books as all_books;
+use crate::schema::books;
+use crate::schema::books::dsl::books as all_books;
 
 #[derive(Serialize, Queryable, Debug, Clone)]
 pub struct Book {
@@ -38,7 +38,7 @@ impl Book {
     }
 
     pub fn update_by_id(id: i32, conn: &PgConnection, book: NewBook) -> bool {
-        use schema::books::dsl::{author as a, published as p, title as t};
+        use crate::schema::books::dsl::{author as a, published as p, title as t};
         let NewBook {
             title,
             author,
